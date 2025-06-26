@@ -276,3 +276,75 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 **Note**: This project is designed for educational and demonstration purposes. For production use, additional security hardening and monitoring may be required.
 
 *Built with ❤️ for the DevSecOps community*
+
+## DevSecOps Pipeline Architecture 🏗️
+
+The following diagram illustrates the complete DevSecOps pipeline workflow:
+
+```mermaid
+graph TD
+    A[🔄 Git Repository] --> B[📦 Jenkins Pipeline Trigger]
+    B --> C[🔍 Checkout Source Code]
+    C --> D[🔨 Maven Build & Test]
+    D --> E{✅ Tests Pass?}
+    E -->|No| F[❌ Build Failed]
+    E -->|Yes| G[📊 SonarQube Analysis]
+    G --> H{🔍 Quality Gate?}
+    H -->|Fail| I[❌ Quality Issues Found]
+    H -->|Pass| J[🐳 Docker Image Build]
+    J --> K[🔒 Trivy Security Scan]
+    K --> L{🛡️ Vulnerabilities?}
+    L -->|Critical Found| M[❌ Security Block]
+    L -->|Safe| N[📤 Push to Docker Hub]
+    N --> O[📁 Upload Reports to GCS]
+    O --> P[🧹 Cleanup Local Images]
+    P --> Q[✅ Pipeline Success]
+    
+    %% Parallel processes
+    G --> R[📝 Generate Code Reports]
+    K --> S[📋 Generate Security Reports]
+    R --> O
+    S --> O
+    
+    %% Security integrations
+    T[🔐 HashiCorp Vault] --> N
+    U[☁️ Google Cloud Storage] --> O
+    V[🐳 Docker Hub Registry] --> N
+    W[📊 SonarQube Server] --> G
+    
+    %% Styling
+    classDef success fill:#d4edda,stroke:#28a745,stroke-width:2px
+    classDef danger fill:#f8d7da,stroke:#dc3545,stroke-width:2px
+    classDef warning fill:#fff3cd,stroke:#ffc107,stroke-width:2px
+    classDef info fill:#d1ecf1,stroke:#17a2b8,stroke-width:2px
+    classDef security fill:#e2e3ff,stroke:#6f42c1,stroke-width:2px
+    
+    class Q success
+    class F,I,M danger
+    class E,H,L warning
+    class A,B,C,D,G,J,K,N,O,P info
+    class T,U,V,W security
+```
+
+## Pipeline Flow Explanation 📋
+
+### Main Pipeline Path
+1. **Source Control**: Code changes trigger the Jenkins pipeline
+2. **Build Phase**: Maven compiles and tests the application
+3. **Quality Assurance**: SonarQube performs static analysis
+4. **Containerization**: Docker builds the application image
+5. **Security Validation**: Trivy scans for vulnerabilities
+6. **Deployment**: Verified images are pushed to Docker Hub
+7. **Reporting**: All reports are archived in cloud storage
+8. **Cleanup**: Local resources are cleaned up
+
+### Security Gates 🚪
+- **Test Gate**: Prevents builds with failing tests
+- **Quality Gate**: Blocks code with quality issues
+- **Security Gate**: Stops deployment of vulnerable images
+
+### External Integrations 🔗
+- **Vault**: Secure credential management
+- **Google Cloud**: Report storage and archival
+- **Docker Hub**: Container registry
+- **SonarQube**: Code quality platform
