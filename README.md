@@ -406,7 +406,7 @@ sequenceDiagram
     participant LB as 🔄 Load Balancer
     participant App as 🚀 Spring Boot App
     participant SC as 🔒 Security Config
-    participant Ctrl as � Controller
+    participant Ctrl as 🎮 Controller
     participant Valid as ✔️ Validator
     participant Log as 📝 Logger
     participant Metrics as 📊 Metrics
@@ -455,7 +455,6 @@ sequenceDiagram
         App->>-LB: HTTP 400 + Error JSON
         LB->>-C: Validation Error Response
     end
-    Valid-->>-Ctrl: Validation Complete
     
     Note over C,Metrics: GET /actuator/health - Health Check
     C->>+LB: HTTP GET /actuator/health
