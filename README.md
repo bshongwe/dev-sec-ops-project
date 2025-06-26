@@ -398,77 +398,7 @@ graph TD
     class Logger,Metrics,LogFile,Prometheus monitoring
 ```
 
-### API Request/Response Flow
 
-```mermaid
-sequenceDiagram
-    participant C as 👤 Client
-    participant LB as 🔄 Load Balancer
-    participant App as 🚀 Spring Boot App
-    participant SC as 🔒 Security Config
-    participant Ctrl as 🎮 Controller
-    participant Valid as ✔️ Validator
-    participant Log as 📝 Logger
-    participant Metrics as 📊 Metrics
-    
-    Note over C,Metrics: GET /api/v1/ - Home Endpoint
-    C->>+LB: HTTP GET /api/v1/
-    LB->>+App: Forward Request
-    App->>+SC: Security Check
-    SC->>SC: Apply Security Headers
-    SC->>+Ctrl: Route to Controller
-    Ctrl->>+Log: Log Request
-    Log-->>-Ctrl: Logged
-    Ctrl->>Ctrl: Generate Response
-    Ctrl->>+Metrics: Update Metrics
-    Metrics-->>-Ctrl: Updated
-    Ctrl->>-SC: Return JSON Response
-    SC->>-App: Add Security Headers
-    App->>-LB: HTTP 200 + JSON
-    LB->>-C: Response with App Info
-    
-    Note over C,Metrics: POST /api/v1/echo - Echo Endpoint
-    C->>+LB: HTTP POST /api/v1/echo
-    LB->>+App: Forward Request + Body
-    App->>+SC: Security Check
-    SC->>+Ctrl: Route to Controller
-    Ctrl->>+Valid: Validate Input
-    alt Valid Input
-        Valid-->>Ctrl: Validation Success
-        deactivate Valid
-        Ctrl->>+Log: Log Valid Request
-        Log-->>-Ctrl: Logged
-        Ctrl->>Ctrl: Process Echo Logic
-        Ctrl->>+Metrics: Update Success Metrics
-        Metrics-->>-Ctrl: Updated
-        Ctrl->>-SC: Return Echo Response
-        SC->>-App: Add Security Headers
-        App->>-LB: HTTP 200 + JSON
-        LB->>-C: Echo Response
-    else Invalid Input
-        Valid-->>Ctrl: Validation Failed
-        deactivate Valid
-        Ctrl->>+Log: Log Validation Error
-        Log-->>-Ctrl: Logged
-        Ctrl->>+Metrics: Update Error Metrics
-        Metrics-->>-Ctrl: Updated
-        Ctrl->>-SC: Return 400 Error
-        SC->>-App: Add Security Headers
-        App->>-LB: HTTP 400 + Error JSON
-        LB->>-C: Validation Error Response
-    end
-    
-    Note over C,Metrics: GET /actuator/health - Health Check
-    C->>+LB: HTTP GET /actuator/health
-    LB->>+App: Forward Request
-    App->>+SC: Security Check (Permitted)
-    SC-->>-App: Permitted
-    App->>App: Check Application Health
-    App->>+Metrics: Update Health Metrics
-    Metrics-->>-App: Updated
-    App->>-LB: HTTP 200 + Health Status
-    LB->>-C: Health Check Response
-```
 
 ## DevSecOps Pipeline Architecture 🏗️
 
