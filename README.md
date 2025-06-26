@@ -8,25 +8,36 @@ This project showcases a complete DevSecOps implementation using a Spring Boot a
 
 ## Application Details 📱
 
-- **Framework**: Spring Boot 2.4.5
+- **Framework**: Spring Boot 2.7.18 (LTS with security updates)
 - **Java Version**: Java 11
-- **Application Type**: RESTful web service
-- **Main Endpoint**: `/` - Returns "Hello Docker World!"
-- **Build Tool**: Maven with wrapper scripts
+- **Application Type**: Secure RESTful web service
+- **Main Endpoints**: 
+  - `/api/v1/` - Welcome message with application info
+  - `/api/v1/health` - Application health status
+  - `/api/v1/echo` - Echo service with input validation
+  - `/actuator/health` - Spring Boot health endpoint
+  - `/swagger-ui.html` - API documentation
+- **Build Tool**: Maven with security plugins
+- **Security**: Spring Security with HTTPS headers and validation
 
 ## Tools and Technologies 🛠️
 
 ### Core Technologies
-- **Spring Boot**: Web application framework
-- **Maven**: Build automation and dependency management
+- **Spring Boot 2.7.18**: Secure web application framework (LTS)
+- **Spring Security**: Authentication and authorization
+- **Spring Boot Actuator**: Production monitoring and metrics
+- **Maven**: Build automation with security plugins
 - **Java 11**: Runtime environment
+- **OpenAPI 3**: API documentation and testing
 
 ### DevSecOps Tools
 - **Jenkins**: CI/CD orchestration and pipeline automation
-- **Maven**: Build automation and dependency management
-- **Docker**: Containerization with multi-stage builds
+- **Maven**: Build automation with OWASP dependency checking
+- **Docker**: Secure containerization with multi-stage builds
 - **Trivy**: Container vulnerability scanning
 - **SonarQube**: Static code analysis and security scanning
+- **JaCoCo**: Code coverage analysis
+- **OWASP Dependency Check**: Vulnerability scanning for dependencies
 - **Google Cloud Storage**: Artifact and report storage
 - **Vault**: Secure credential management
 
@@ -79,18 +90,26 @@ dev-sec-ops-project/
 ├── src/
 │   ├── main/
 │   │   ├── java/com/example/demo/
-│   │   │   └── DemoApplication.java          # Spring Boot main application
+│   │   │   ├── DemoApplication.java          # Spring Boot main application
+│   │   │   ├── controller/
+│   │   │   │   └── DemoController.java       # REST API endpoints
+│   │   │   └── config/
+│   │   │       └── SecurityConfig.java       # Security configuration
 │   │   └── resources/
 │   │       └── application.properties        # Application configuration
 │   └── test/
-│       └── java/com/example/demo/
-│           └── DemoApplicationTests.java     # Unit tests
+│       ├── java/com/example/demo/
+│       │   ├── DemoApplicationTests.java     # Unit tests
+│       │   └── controller/
+│       │       └── DemoControllerIntegrationTest.java # Integration tests
+│       └── resources/
+│           └── application-test.properties   # Test configuration
 ├── vars/
 │   └── helloWorld.groovy                    # Jenkins shared library
-├── Dockerfile                               # Multi-stage container build
+├── Dockerfile                               # Secure multi-stage container build
 ├── Jenkinsfile                              # Main CI/CD pipeline (sonar branch)
 ├── Jenkinsfile-1                            # Alternative pipeline (main branch)
-├── pom.xml                                  # Maven project configuration
+├── pom.xml                                  # Maven project with security plugins
 ├── mvnw / mvnw.cmd                          # Maven wrapper scripts
 └── README.md                                # Project documentation
 ```
@@ -99,23 +118,26 @@ dev-sec-ops-project/
 
 ### Dockerfile
 - **Multi-stage build**: Optimizes image size and security
-- **Base image**: AdoptOpenJDK 11 Alpine for minimal footprint
-- **Build stage**: Compiles application and extracts dependencies
-- **Runtime stage**: Creates lean production image
-- **Port configuration**: Supports dynamic port binding
-
-### Jenkinsfile
-- **Declarative pipeline**: Uses modern Jenkins pipeline syntax
-- **Tool integration**: Configured for Maven 3.8.6
-- **Security integration**: Vault for credential management
-- **Parallel execution**: Optimized for fast feedback loops
-- **Error handling**: Comprehensive post-build actions
+- **Base image**: Eclipse Temurin JRE Alpine for minimal footprint and security
+- **Build stage**: Compiles application with dependency caching
+- **Production stage**: Creates lean, secure runtime image
+- **Non-root user**: Runs as dedicated application user for security
+- **Health checks**: Built-in container health monitoring
+- **Security labels**: Proper image labeling and metadata
 
 ### pom.xml
-- **Spring Boot**: Version 2.4.5 with web starter
-- **Java 11**: Target runtime environment
-- **Testing**: Includes Spring Boot test starter
-- **Build plugins**: Maven Spring Boot plugin for packaging
+- **Spring Boot 2.7.18**: Updated to LTS version with security patches
+- **Security dependencies**: Spring Security, validation, and actuator
+- **Testing framework**: Comprehensive test dependencies
+- **Security plugins**: OWASP dependency check and JaCoCo coverage
+- **Build optimization**: Proper Maven configuration for CI/CD
+
+### Application Configuration
+- **Structured logging**: Configurable log levels and formats
+- **Security headers**: HSTS, frame options, content type protection
+- **Monitoring endpoints**: Health checks and metrics via Actuator
+- **API documentation**: OpenAPI/Swagger integration
+- **Environment separation**: Different configs for dev/test/prod
 
 ## Getting Started 🚀
 
@@ -144,8 +166,10 @@ dev-sec-ops-project/
    ```
 
 4. **Access the application**
-   - Open your browser to `http://localhost:8080`
-   - You should see "Hello Docker World!"
+   - Open your browser to `http://localhost:8080/api/v1`
+   - You should see a JSON response with "Hello DevSecOps World!"
+   - Visit `http://localhost:8080/swagger-ui.html` for API documentation
+   - Check health at `http://localhost:8080/actuator/health`
 
 ### Docker Deployment
 
@@ -159,23 +183,52 @@ dev-sec-ops-project/
    docker run -p 8080:8080 devsecops-demo
    ```
 
+3. **Test the application**
+   ```bash
+   # Test main endpoint
+   curl http://localhost:8080/api/v1/
+   
+   # Test health endpoint
+   curl http://localhost:8080/actuator/health
+   
+   # Test echo endpoint
+   curl -X POST http://localhost:8080/api/v1/echo \
+     -H "Content-Type: application/json" \
+     -d '{"message":"Hello DevSecOps!"}'
+   ```
+
 ## Security Features 🔒
 
 ### Static Analysis
 - **SonarQube Integration**: Continuous code quality monitoring
 - **Security hotspot detection**: Identifies potential security issues
+- **OWASP Dependency Check**: Scans for vulnerable dependencies
+- **Code coverage**: JaCoCo integration for test coverage metrics
 - **Technical debt tracking**: Maintains code maintainability
+- **Quality gates**: Automated quality thresholds
 
 ### Container Security
 - **Trivy scanning**: Comprehensive vulnerability assessment
-- **Multi-stage builds**: Reduces attack surface
-- **Non-root execution**: Follows security best practices
-- **Minimal base images**: Alpine Linux for reduced vulnerabilities
+- **Multi-stage builds**: Reduces attack surface significantly
+- **Non-root execution**: Dedicated application user (appuser:appgroup)
+- **Minimal base images**: Eclipse Temurin Alpine for reduced vulnerabilities
+- **Health checks**: Container-level health monitoring
+- **Resource limits**: JVM tuning for container environments
+- **Security labels**: Proper image metadata and versioning
+
+### Application Security
+- **Spring Security**: Authentication and authorization framework
+- **Input validation**: JSR-303 Bean Validation for all inputs
+- **Security headers**: HSTS, frame options, content type protection
+- **Error handling**: Secure error responses without information disclosure
+- **Logging**: Structured security logging for audit trails
+- **API documentation**: Secured OpenAPI/Swagger endpoints
 
 ### Credential Management
 - **HashiCorp Vault**: Secure secret storage and retrieval
 - **No hardcoded secrets**: All sensitive data externalized
 - **Credential rotation**: Supports automated secret updates
+- **Environment separation**: Different secrets for different environments
 
 ## Pipeline Configuration ⚙️
 
@@ -193,14 +246,18 @@ dev-sec-ops-project/
 - SonarQube Scanner
 - Google Cloud Storage
 - HashiCorp Vault
+- JaCoCo
+- OWASP Dependency Check
 
 ## Monitoring and Reporting 📊
 
 ### Build Reports
-- **JUnit test results**: Automated test reporting
-- **SonarQube analysis**: Code quality metrics
-- **Trivy security reports**: Vulnerability assessments
-- **Cloud storage**: Centralized report archival
+- **JUnit test results**: Automated test reporting with full coverage
+- **JaCoCo coverage**: Code coverage metrics and trends
+- **SonarQube analysis**: Code quality and security metrics
+- **OWASP dependency reports**: Vulnerability assessments for dependencies
+- **Trivy security reports**: Container vulnerability assessments
+- **Cloud storage**: Centralized report archival and history
 
 ### Metrics Tracked
 - Build success/failure rates
@@ -248,10 +305,13 @@ We welcome contributions to improve this DevSecOps implementation!
 7. Open a Pull Request
 
 ### Code Standards
-- Follow Spring Boot best practices
-- Maintain test coverage above 80%
-- Ensure all security scans pass
+- Follow Spring Boot best practices and security guidelines
+- Maintain test coverage above 80% (enforced by JaCoCo)
+- Ensure all security scans pass (SonarQube, OWASP, Trivy)
+- Use proper input validation and error handling
+- Follow secure coding practices (OWASP guidelines)
 - Update documentation for new features
+- Use structured logging with appropriate levels
 
 ### Reporting Issues
 - Use GitHub Issues for bug reports
