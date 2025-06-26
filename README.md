@@ -337,7 +337,133 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 *Built with ❤️ for the DevSecOps community*
 
+## API Architecture & Endpoints 🌐
+
+### API Endpoint Flow Diagram
+
+```mermaid
+graph TD
+    Client[👤 Client/Browser] --> LB[🔄 Load Balancer]
+    LB --> App[🚀 Spring Boot Application]
+    
+    %% Security Layer
+    App --> Security[🔒 Spring Security Filter]
+    Security --> Auth{🔐 Authentication Required?}
+    Auth -->|No| Public[📖 Public Endpoints]
+    Auth -->|Yes| Login[🔑 Authentication]
+    Login --> Private[🔐 Protected Endpoints]
+    
+    %% Public Endpoints
+    Public --> Home[🏠 GET /api/v1/]
+    Public --> Health[❤️ GET /api/v1/health]
+    Public --> ActuatorHealth[⚕️ GET /actuator/health]
+    Public --> Docs[📚 GET /swagger-ui.html]
+    Public --> ApiDocs[📋 GET /v3/api-docs]
+    
+    %% Protected Endpoints (currently open for demo)
+    Public --> Echo[🔊 POST /api/v1/echo]
+    
+    %% Endpoint Processing
+    Home --> HomeResp[📄 JSON Response with App Info]
+    Health --> HealthResp[✅ Application Health Status]
+    ActuatorHealth --> ActuatorResp[🔍 Detailed Health Metrics]
+    Echo --> Validation{✔️ Input Validation}
+    Validation -->|Valid| EchoResp[🔄 Echo Response]
+    Validation -->|Invalid| ErrorResp[❌ Validation Error]
+    
+    %% Response Types
+    HomeResp --> JSON1[📊 JSON: message, version, status, timestamp]
+    HealthResp --> JSON2[📊 JSON: status, timestamp]
+    ActuatorResp --> JSON3[📊 JSON: status, components, details]
+    EchoResp --> JSON4[📊 JSON: originalMessage, echoMessage, length, timestamp]
+    ErrorResp --> JSON5[📊 JSON: error, message, status]
+    
+    %% Monitoring & Logging
+    App --> Logger[📝 Structured Logging]
+    App --> Metrics[📈 Actuator Metrics]
+    Logger --> LogFile[📄 Application Logs]
+    Metrics --> Prometheus[📊 Prometheus Metrics]
+    
+    %% Styling
+    classDef client fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
+    classDef security fill:#fff3e0,stroke:#f57400,stroke-width:2px
+    classDef endpoint fill:#e8f5e8,stroke:#388e3c,stroke-width:2px
+    classDef response fill:#fce4ec,stroke:#c2185b,stroke-width:2px
+    classDef monitoring fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    
+    class Client,LB client
+    class Security,Auth,Login security
+    class Home,Health,ActuatorHealth,Echo,Docs,ApiDocs endpoint
+    class HomeResp,HealthResp,ActuatorResp,EchoResp,ErrorResp,JSON1,JSON2,JSON3,JSON4,JSON5 response
+    class Logger,Metrics,LogFile,Prometheus monitoring
+```
+
+### API Request/Response Flow
+
+```mermaid
+sequenceDiagram
+    participant C as 👤 Client
+    participant LB as 🔄 Load Balancer
+    participant App as 🚀 Spring Boot App
+    participant SC as 🔒 Security Config
+    participant Ctrl as � Controller
+    participant Valid as ✔️ Validator
+    participant Log as 📝 Logger
+    participant Metrics as 📊 Metrics
+    
+    Note over C,Metrics: GET /api/v1/ - Home Endpoint
+    C->>+LB: HTTP GET /api/v1/
+    LB->>+App: Forward Request
+    App->>+SC: Security Check
+    SC->>SC: Apply Security Headers
+    SC->>+Ctrl: Route to Controller
+    Ctrl->>+Log: Log Request
+    Ctrl->>Ctrl: Generate Response
+    Ctrl->>+Metrics: Update Metrics
+    Ctrl->>-SC: Return JSON Response
+    SC->>-App: Add Security Headers
+    App->>-LB: HTTP 200 + JSON
+    LB->>-C: Response with App Info
+    
+    Note over C,Metrics: POST /api/v1/echo - Echo Endpoint
+    C->>+LB: HTTP POST /api/v1/echo
+    LB->>+App: Forward Request + Body
+    App->>+SC: Security Check
+    SC->>+Ctrl: Route to Controller
+    Ctrl->>+Valid: Validate Input
+    alt Valid Input
+        Valid->>Ctrl: Validation Success
+        Ctrl->>+Log: Log Valid Request
+        Ctrl->>Ctrl: Process Echo Logic
+        Ctrl->>+Metrics: Update Success Metrics
+        Ctrl->>-SC: Return Echo Response
+        SC->>-App: Add Security Headers
+        App->>-LB: HTTP 200 + JSON
+        LB->>-C: Echo Response
+    else Invalid Input
+        Valid->>Ctrl: Validation Failed
+        Ctrl->>+Log: Log Validation Error
+        Ctrl->>+Metrics: Update Error Metrics
+        Ctrl->>-SC: Return 400 Error
+        SC->>-App: Add Security Headers
+        App->>-LB: HTTP 400 + Error JSON
+        LB->>-C: Validation Error Response
+    end
+    
+    Note over C,Metrics: GET /actuator/health - Health Check
+    C->>+LB: HTTP GET /actuator/health
+    LB->>+App: Forward Request
+    App->>+SC: Security Check (Permitted)
+    SC->>App: Direct to Actuator
+    App->>App: Check Application Health
+    App->>+Metrics: Update Health Metrics
+    App->>-LB: HTTP 200 + Health Status
+    LB->>-C: Health Check Response
+```
+
 ## DevSecOps Pipeline Architecture 🏗️
+
+### Pipeline Overview Diagram
 
 The following diagram illustrates the complete DevSecOps pipeline workflow:
 
@@ -384,6 +510,197 @@ graph TD
     class E,H,L warning
     class A,B,C,D,G,J,K,N,O,P info
     class T,U,V,W security
+```
+
+### Detailed Pipeline Workflow
+
+```mermaid
+graph TD
+    %% Source Control
+    A1[🔄 Git Repository] --> B1[📦 Jenkins Pipeline Trigger]
+    B1 --> C1[🔍 Checkout Source Code]
+    
+    %% Build Phase
+    C1 --> D1[🔨 Maven Build & Test]
+    D1 --> D2[📦 Download Dependencies]
+    D2 --> D3[🔧 Compile Source Code]
+    D3 --> D4[🧪 Run Unit Tests]
+    D4 --> D5[📊 Generate Test Reports]
+    D5 --> E1{✅ Tests Pass?}
+    E1 -->|No| F1[❌ Build Failed - Notify Team]
+    E1 -->|Yes| G1[📊 SonarQube Analysis]
+    
+    %% Code Quality Phase
+    G1 --> G2[🔍 Static Code Analysis]
+    G2 --> G3[🔒 Security Hotspot Detection]
+    G3 --> G4[📈 Code Coverage Analysis]
+    G4 --> G5[📋 Technical Debt Assessment]
+    G5 --> H1{🔍 Quality Gate Pass?}
+    H1 -->|Fail| I1[❌ Quality Issues Found - Block Pipeline]
+    H1 -->|Pass| J1[🐳 Docker Image Build]
+    
+    %% Containerization Phase
+    J1 --> J2[🏗️ Multi-stage Build]
+    J2 --> J3[📦 Dependency Layer]
+    J3 --> J4[🔧 Application Layer]
+    J4 --> J5[🏷️ Tag with Build Number]
+    J5 --> K1[🔒 Trivy Security Scan]
+    
+    %% Security Scanning Phase
+    K1 --> K2[🔍 OS Vulnerability Scan]
+    K2 --> K3[📦 Package Vulnerability Scan]
+    K3 --> K4[🐳 Container Config Scan]
+    K4 --> K5[📋 Generate Security Report]
+    K5 --> L1{🛡️ Critical Vulnerabilities?}
+    L1 -->|Critical Found| M1[❌ Security Block - Stop Deployment]
+    L1 -->|Safe| N1[📤 Push to Docker Hub]
+    
+    %% Deployment Phase
+    N1 --> N2[🔐 Vault Authentication]
+    N2 --> N3[🐳 Push to Registry]
+    N3 --> N4[🏷️ Update Image Tags]
+    N4 --> O1[📁 Upload Reports to GCS]
+    
+    %% Reporting Phase
+    O1 --> O2[📊 Upload Test Reports]
+    O2 --> O3[🔒 Upload Security Reports]
+    O3 --> O4[📈 Upload Coverage Reports]
+    O4 --> O5[📋 Upload Build Artifacts]
+    O5 --> P1[🧹 Cleanup Local Images]
+    
+    %% Cleanup Phase
+    P1 --> P2[🗑️ Remove Build Images]
+    P2 --> P3[🧽 Clean Workspace]
+    P3 --> Q1[✅ Pipeline Success - Notify Team]
+    
+    %% Parallel Processes
+    G1 --> R1[📝 Generate Code Quality Reports]
+    K1 --> S1[📋 Generate Security Reports]
+    D1 --> T1[🧪 Run Integration Tests]
+    R1 --> O1
+    S1 --> O1
+    T1 --> E1
+    
+    %% External Integrations
+    U1[🔐 HashiCorp Vault] --> N2
+    V1[☁️ Google Cloud Storage] --> O1
+    W1[🐳 Docker Hub Registry] --> N3
+    X1[📊 SonarQube Server] --> G1
+    Y1[🔔 Notification Service] --> F1
+    Y1 --> I1
+    Y1 --> M1
+    Y1 --> Q1
+    
+    %% Error Handling
+    F1 --> F2[📧 Email Notification]
+    F2 --> F3[💬 Slack Alert]
+    I1 --> I2[📧 Quality Report Email]
+    I2 --> I3[📊 Dashboard Update]
+    M1 --> M2[🚨 Security Alert]
+    M2 --> M3[📋 Vulnerability Report]
+    
+    %% Styling
+    classDef success fill:#d4edda,stroke:#28a745,stroke-width:3px
+    classDef danger fill:#f8d7da,stroke:#dc3545,stroke-width:3px
+    classDef warning fill:#fff3cd,stroke:#ffc107,stroke-width:2px
+    classDef info fill:#d1ecf1,stroke:#17a2b8,stroke-width:2px
+    classDef security fill:#e2e3ff,stroke:#6f42c1,stroke-width:2px
+    classDef external fill:#f0f0f0,stroke:#6c757d,stroke-width:2px
+    
+    class Q1 success
+    class F1,I1,M1,F2,F3,I2,I3,M2,M3 danger
+    class E1,H1,L1 warning
+    class A1,B1,C1,D1,D2,D3,D4,D5,G1,G2,G3,G4,G5,J1,J2,J3,J4,J5,K1,K2,K3,K4,K5,N1,N2,N3,N4,O1,O2,O3,O4,O5,P1,P2,P3 info
+    class R1,S1,T1 security
+    class U1,V1,W1,X1,Y1 external
+```
+
+### Pipeline Stages Timeline
+
+```mermaid
+gantt
+    title DevSecOps Pipeline Execution Timeline
+    dateFormat X
+    axisFormat %s
+    
+    section Source Control
+    Git Checkout           :source, 0, 30s
+    
+    section Build & Test
+    Maven Build            :build, after source, 120s
+    Unit Tests             :test, after build, 60s
+    Integration Tests      :integration, after build, 90s
+    
+    section Code Quality
+    SonarQube Analysis     :quality, after test, 180s
+    Code Coverage          :coverage, after test, 45s
+    Quality Gate Check     :gate, after quality, 15s
+    
+    section Security
+    OWASP Dependency Check :owasp, after gate, 120s
+    Docker Image Build     :docker, after gate, 90s
+    Trivy Security Scan    :trivy, after docker, 60s
+    
+    section Deployment
+    Push to Registry       :push, after trivy, 45s
+    Upload Reports         :reports, after push, 30s
+    Cleanup                :cleanup, after reports, 20s
+    
+    section Notifications
+    Success Notification   :notify, after cleanup, 10s
+```
+
+### Security Gates and Decision Points
+
+```mermaid
+flowchart TD
+    Start([🚀 Pipeline Start]) --> CodeCheckout[📥 Code Checkout]
+    
+    CodeCheckout --> BuildGate{🔧 Build Gate}
+    BuildGate -->|✅ Success| TestGate{🧪 Test Gate}
+    BuildGate -->|❌ Fail| BuildFail[❌ Build Failed]
+    
+    TestGate -->|✅ Pass| QualityGate{📊 Quality Gate}
+    TestGate -->|❌ Fail| TestFail[❌ Tests Failed]
+    
+    QualityGate -->|✅ Pass| SecurityGate{🔒 Security Gate}
+    QualityGate -->|❌ Fail| QualityFail[❌ Quality Issues]
+    
+    SecurityGate -->|✅ Safe| DeployGate{🚀 Deploy Gate}
+    SecurityGate -->|❌ Vulnerable| SecurityFail[❌ Security Block]
+    
+    DeployGate -->|✅ Approved| Success[✅ Pipeline Success]
+    DeployGate -->|❌ Rejected| DeployFail[❌ Deployment Blocked]
+    
+    %% Failure Paths
+    BuildFail --> Notify1[📧 Notify Development Team]
+    TestFail --> Notify2[📧 Notify QA Team]
+    QualityFail --> Notify3[📧 Notify Code Review Team]
+    SecurityFail --> Notify4[🚨 Notify Security Team]
+    DeployFail --> Notify5[📧 Notify Operations Team]
+    
+    %% Success Path
+    Success --> Notify6[✅ Notify All Teams]
+    
+    %% Gate Criteria
+    BuildGate -.->|Criteria| BC[🔧 Code Compiles<br/>📦 Dependencies Resolved<br/>🔧 Build Artifacts Created]
+    TestGate -.->|Criteria| TC[🧪 Unit Tests Pass<br/>🔗 Integration Tests Pass<br/>📊 Coverage > 80%]
+    QualityGate -.->|Criteria| QC[📊 Code Quality Score > B<br/>🔒 No Security Hotspots<br/>📈 Technical Debt < Threshold]
+    SecurityGate -.->|Criteria| SC[🔍 No Critical Vulnerabilities<br/>🐳 Container Scan Clean<br/>📦 Dependencies Safe]
+    DeployGate -.->|Criteria| DC[🔐 Credentials Valid<br/>📋 Approval Received<br/>🎯 Target Environment Ready]
+    
+    %% Styling
+    classDef success fill:#d4edda,stroke:#28a745,stroke-width:2px
+    classDef danger fill:#f8d7da,stroke:#dc3545,stroke-width:2px
+    classDef warning fill:#fff3cd,stroke:#ffc107,stroke-width:2px
+    classDef info fill:#d1ecf1,stroke:#17a2b8,stroke-width:2px
+    classDef criteria fill:#f8f9fa,stroke:#6c757d,stroke-width:1px
+    
+    class Success,Notify6 success
+    class BuildFail,TestFail,QualityFail,SecurityFail,DeployFail,Notify1,Notify2,Notify3,Notify4,Notify5 danger
+    class BuildGate,TestGate,QualityGate,SecurityGate,DeployGate warning
+    class CodeCheckout info
+    class BC,TC,QC,SC,DC criteria
 ```
 
 ## Pipeline Flow Explanation 📋
