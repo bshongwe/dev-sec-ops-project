@@ -4,7 +4,7 @@ A comprehensive DevSecOps pipeline demonstrating security-first CI/CD practices 
 
 ## Overview 📄
 
-This project showcases a complete DevSecOps implementation using a Spring Boot application as the foundation. It integrates security scanning, code quality analysis, and automated deployment through a robust CI/CD pipeline that emphasizes security at every stage.
+This project showcases a complete DevSecOps implementation using a Spring Boot application as the foundation. It integrates security scanning, code quality analysis, and automated deployment through a robust CI/CD pipeline that emphasizes     participant Ctrl as 🎮 Controllerecurity at every stage.
 
 ## Application Details 📱
 
@@ -418,8 +418,10 @@ sequenceDiagram
     SC->>SC: Apply Security Headers
     SC->>+Ctrl: Route to Controller
     Ctrl->>+Log: Log Request
+    Log-->>-Ctrl: Logged
     Ctrl->>Ctrl: Generate Response
     Ctrl->>+Metrics: Update Metrics
+    Metrics-->>-Ctrl: Updated
     Ctrl->>-SC: Return JSON Response
     SC->>-App: Add Security Headers
     App->>-LB: HTTP 200 + JSON
@@ -432,31 +434,37 @@ sequenceDiagram
     SC->>+Ctrl: Route to Controller
     Ctrl->>+Valid: Validate Input
     alt Valid Input
-        Valid->>Ctrl: Validation Success
+        Valid-->>Ctrl: Validation Success
         Ctrl->>+Log: Log Valid Request
+        Log-->>-Ctrl: Logged
         Ctrl->>Ctrl: Process Echo Logic
         Ctrl->>+Metrics: Update Success Metrics
+        Metrics-->>-Ctrl: Updated
         Ctrl->>-SC: Return Echo Response
         SC->>-App: Add Security Headers
         App->>-LB: HTTP 200 + JSON
         LB->>-C: Echo Response
     else Invalid Input
-        Valid->>Ctrl: Validation Failed
+        Valid-->>Ctrl: Validation Failed
         Ctrl->>+Log: Log Validation Error
+        Log-->>-Ctrl: Logged
         Ctrl->>+Metrics: Update Error Metrics
+        Metrics-->>-Ctrl: Updated
         Ctrl->>-SC: Return 400 Error
         SC->>-App: Add Security Headers
         App->>-LB: HTTP 400 + Error JSON
         LB->>-C: Validation Error Response
     end
+    Valid-->>-Ctrl: Validation Complete
     
     Note over C,Metrics: GET /actuator/health - Health Check
     C->>+LB: HTTP GET /actuator/health
     LB->>+App: Forward Request
     App->>+SC: Security Check (Permitted)
-    SC->>App: Direct to Actuator
+    SC-->>-App: Permitted
     App->>App: Check Application Health
     App->>+Metrics: Update Health Metrics
+    Metrics-->>-App: Updated
     App->>-LB: HTTP 200 + Health Status
     LB->>-C: Health Check Response
 ```
