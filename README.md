@@ -434,7 +434,8 @@ sequenceDiagram
     SC->>+Ctrl: Route to Controller
     Ctrl->>+Valid: Validate Input
     alt Valid Input
-        Valid-->>-Ctrl: Validation Success
+        Valid-->>Ctrl: Validation Success
+        deactivate Valid
         Ctrl->>+Log: Log Valid Request
         Log-->>-Ctrl: Logged
         Ctrl->>Ctrl: Process Echo Logic
@@ -445,7 +446,8 @@ sequenceDiagram
         App->>-LB: HTTP 200 + JSON
         LB->>-C: Echo Response
     else Invalid Input
-        Valid-->>-Ctrl: Validation Failed
+        Valid-->>Ctrl: Validation Failed
+        deactivate Valid
         Ctrl->>+Log: Log Validation Error
         Log-->>-Ctrl: Logged
         Ctrl->>+Metrics: Update Error Metrics
