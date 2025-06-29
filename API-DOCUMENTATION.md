@@ -327,19 +327,19 @@ public class EchoRequest {
 
 ```mermaid
 flowchart TD
-    A[👤 Client Request GET /api/v1/] --> B[🔒 Security Filter]
-    B --> C[🎮 DemoController.home()]
-    C --> D[📝 Log Request]
-    D --> E[📊 Create Response Map]
-    E --> F[💾 Add Response Data]
-    F --> G[📤 Return ResponseEntity]
-    G --> H[✅ 200 OK Response]
+    A["👤 Client Request GET /api/v1/"] --> B["🔒 Security Filter"]
+    B --> C["🎮 DemoController.home()"]
+    C --> D["📝 Log Request"]
+    D --> E["📊 Create Response Map"]
+    E --> F["💾 Add Response Data"]
+    F --> G["📤 Return ResponseEntity"]
+    G --> H["✅ 200 OK Response"]
     
-    subgraph "Response Data"
-        I[message: Hello DevSecOps World!]
-        J[timestamp: Current DateTime]
-        K[version: 1.0.0]
-        L[status: healthy]
+    subgraph ResponseData ["Response Data"]
+        I["message: Hello DevSecOps World!"]
+        J["timestamp: Current DateTime"]
+        K["version: 1.0.0"]
+        L["status: healthy"]
     end
     
     F --> I
@@ -360,30 +360,30 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A[👤 Client POST /api/v1/echo] --> B[🔒 Security Filter]
-    B --> C[📥 Parse JSON Request]
-    C --> D[✅ Validate Request Body]
-    D --> E{🔍 Validation Valid?}
+    A["👤 Client POST /api/v1/echo"] --> B["🔒 Security Filter"]
+    B --> C["📥 Parse JSON Request"]
+    C --> D["✅ Validate Request Body"]
+    D --> E{"🔍 Validation Valid?"}
     
-    E -->|❌ Invalid| F[🚫 Validation Error]
-    F --> G[📤 400 Bad Request]
+    E -->|"❌ Invalid"| F["🚫 Validation Error"]
+    F --> G["📤 400 Bad Request"]
     
-    E -->|✅ Valid| H[🎮 DemoController.echo()]
-    H --> I[📝 Log Request Details]
-    I --> J[📊 Process Message]
-    J --> K[💾 Create Echo Response]
-    K --> L[📤 Return 200 OK]
+    E -->|"✅ Valid"| H["🎮 DemoController.echo()"]
+    H --> I["📝 Log Request Details"]
+    I --> J["📊 Process Message"]
+    J --> K["💾 Create Echo Response"]
+    K --> L["📤 Return 200 OK"]
     
-    subgraph "Validation Rules"
-        M[@NotBlank: Message not empty]
-        N[@Size: 1-1000 characters]
+    subgraph ValidationRules ["Validation Rules"]
+        M["@NotBlank: Message not empty"]
+        N["@Size: 1-1000 characters"]
     end
     
-    subgraph "Response Data"
-        O[originalMessage: Input]
-        P[echoMessage: Echo + Input]
-        Q[timestamp: Current DateTime]
-        R[messageLength: Character count]
+    subgraph ResponseData ["Response Data"]
+        O["originalMessage: Input"]
+        P["echoMessage: Echo + Input"]
+        Q["timestamp: Current DateTime"]
+        R["messageLength: Character count"]
     end
     
     D --> M
@@ -410,17 +410,17 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A[👤 Client GET /api/v1/health] --> B[🔒 Security Filter]
-    B --> C[🎮 DemoController.health()]
-    C --> D[📝 Log Debug Message]
-    D --> E[📊 Create Health Map]
-    E --> F[💾 Add Status: UP]
-    F --> G[💾 Add Timestamp]
-    G --> H[📤 Return 200 OK]
+    A["👤 Client GET /api/v1/health"] --> B["🔒 Security Filter"]
+    B --> C["🎮 DemoController.health()"]
+    C --> D["📝 Log Debug Message"]
+    D --> E["📊 Create Health Map"]
+    E --> F["💾 Add Status: UP"]
+    F --> G["💾 Add Timestamp"]
+    G --> H["📤 Return 200 OK"]
     
-    subgraph "Health Response"
-        I[status: UP]
-        J[timestamp: Current DateTime]
+    subgraph HealthResponse ["Health Response"]
+        I["status: UP"]
+        J["timestamp: Current DateTime"]
     end
     
     F --> I
@@ -450,24 +450,24 @@ flowchart TD
 
 ```mermaid
 graph TD
-    A[🌐 HTTP Request] --> B[🔒 Security Filter Chain]
-    B --> C{🔍 Endpoint Check}
+    A["🌐 HTTP Request"] --> B["🔒 Security Filter Chain"]
+    B --> C{"🔍 Endpoint Check"}
     
-    C -->|Public Endpoints| D[✅ Allow Access]
-    D --> E[📍 /api/v1/health]
-    D --> F[📍 /actuator/health]
-    D --> G[📍 /swagger-ui/**]
-    D --> H[📍 /v3/api-docs/**]
-    D --> I[📍 /api/v1/** (Demo Mode)]
+    C -->|"Public Endpoints"| D["✅ Allow Access"]
+    D --> E["📍 /api/v1/health"]
+    D --> F["📍 /actuator/health"]
+    D --> G["📍 /swagger-ui/**"]
+    D --> H["📍 /v3/api-docs/**"]
+    D --> I["📍 /api/v1/** (Demo Mode)"]
     
-    C -->|Protected Endpoints| J[🔐 Require Authentication]
-    J --> K[❌ 401 Unauthorized]
+    C -->|"Protected Endpoints"| J["🔐 Require Authentication"]
+    J --> K["❌ 401 Unauthorized"]
     
-    subgraph "Security Configuration"
-        L[🚫 CSRF Disabled (Demo)]
-        M[🔒 HTTPS Headers Enabled]
-        N[🛡️ Frame Options: DENY]
-        O[📏 Content Type Options]
+    subgraph SecurityConfig ["Security Configuration"]
+        L["🚫 CSRF Disabled (Demo)"]
+        M["🔒 HTTPS Headers Enabled"]
+        N["🛡️ Frame Options: DENY"]
+        O["📏 Content Type Options"]
     end
     
     B --> L
